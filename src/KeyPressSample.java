@@ -11,10 +11,21 @@ public class KeyPressSample
 		Robot r = new Robot();
 		int randomNum = 0;
 		
-		for(int i=0; i<20; i++)
+		for(int i=0; i<500; i++)
 		{
-			randomNum = ThreadLocalRandom.current().nextInt(1, 4);
-			System.out.println(randomNum);
+			randomNum = ThreadLocalRandom.current().nextInt(1, 11);
+			if(randomNum<2)
+			{
+				randomNum = 1;
+			}
+			else if(randomNum<4)
+			{
+				randomNum = 2;
+			}
+			else
+			{
+				randomNum = 3;
+			}
 			if(randomNum == 1)
 			{
 				r.keyPress(KeyEvent.VK_SHIFT);
