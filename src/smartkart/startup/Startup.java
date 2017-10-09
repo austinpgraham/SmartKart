@@ -22,6 +22,8 @@ public class Startup
 			System.out.println("Could not navigate to race, exiting...");
 		}
 		
+		
+		
 		// Start the learning agent
 		// TODO: Build the agent
 	}
