@@ -1,5 +1,7 @@
 package smartkart.startup;
 
+import smartkart.learning.ConvolutionalNetwork;
+
 import java.awt.AWTException;
 
 /*
@@ -13,18 +15,17 @@ public class Startup
 	public static void main(String[] args)
 	{
 		// Start the race
-		try 
-		{
-			RaceStart.navigateToRace();
-		} 
-		catch (AWTException e) 
-		{
-			System.out.println("Could not navigate to race, exiting...");
-		}
-		
-		
+//		try 
+//		{
+//			RaceStart.navigateToRace();
+//		} 
+//		catch (AWTException e) 
+//		{
+//			System.out.println("Could not navigate to race, exiting...");
+//		}
 		
 		// Start the learning agent
 		// TODO: Build the agent
+		ConvolutionalNetwork cnn = new ConvolutionalNetwork();
 	}
 }
