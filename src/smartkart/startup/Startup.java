@@ -15,7 +15,7 @@ import smartkart.action.KeyPress;
  */
 public class Startup
 {
-	public static void main(String[] args) throws AWTException
+	public static void main(String[] args) throws AWTException, InterruptedException
 	{
 		KeyPress kp = new KeyPress();
 		// Start the race
@@ -31,13 +31,14 @@ public class Startup
 		Thread shiftThread = new Thread(new Runnable() {
 		    public void run() {
 		    	while(!Thread.currentThread().isInterrupted()){
-		    		kp.longPressKey(keycode);
+		    		kp.longPressKey(KeyEvent.VK_SHIFT);
 		    	}
 		    }
-		}).start();
+		});
+		shiftThread.start();
 		//race happens here
-		
-		kp.release(KeyEvent.VK_SHIFT);
+		shiftThread.interrupt();
+		shiftThread.join();
 		
 		// Start the learning agent
 		// TODO: Build the agent

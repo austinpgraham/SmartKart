@@ -1,7 +1,6 @@
 package smartkart.startup;
 
 import java.awt.AWTException;
-
 import java.awt.event.KeyEvent;
 
 import smartkart.action.KeyPress;
