@@ -1,12 +1,9 @@
 package smartkart.learning;
 
-import smartkart.action.SShot;
-
 import smartkart.learning.ImageInput;
+import smartkart.learning.LearningResult;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.awt.image.BufferedImage;
 
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Session;
@@ -27,13 +24,34 @@ public class ConvolutionalNetwork {
 		this.session = load.session();
 	}
 	
+	private LearningResult getResultData(Tensor result) {
+		int max = 0;
+		float maxVal = -1;
+		float[][] tensorVals = new float[1][5];
+		float[][] matrix = result.copyTo(tensorVals);
+		for(int i = 0; i < matrix[0].length; i++) {
+			if(matrix[0][i] > maxVal) {
+				maxVal = matrix[0][i];
+				max = i;
+			}
+		}
+		LearningResult resultData = new LearningResult(max, matrix[0]);
+		return resultData;
+	}
+	
 	public ConvolutionalNetwork() {
 		this.build_graph();
 	}
 	
-	public void feedNetwork(String path) {
-		float[] inputData = (new ImageInput(path)).getData();
+	public LearningResult feedNetwork(BufferedImage input) {
+		float[] inputData = (new ImageInput(input)).getData();
 		Tensor inputTensor = Tensor.create(inputData);
-		System.out.println(this.session.runner().feed("input", inputTensor).fetch("output").run().get(0));
+		Tensor result = this.session.runner().feed("input", inputTensor).fetch("output").run().get(0);
+		return this.getResultData(result);
+	}
+	
+	public void propogateNetwork(float[] actual) {
+		Tensor inputTensor = Tensor.create(actual);
+		this.session.runner().feed("actual", inputTensor);
 	}
 }

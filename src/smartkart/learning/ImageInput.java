@@ -1,5 +1,7 @@
 package smartkart.learning;
 
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,17 +14,17 @@ public class ImageInput {
 	private int width;
 	private int height;
 	
-	public ImageInput(String path) {
-		BufferedImage picture = null;
-		try {
-			picture = ImageIO.read(new File(path));
-		} catch (IOException e) {
-			System.out.println("ERROR. Could not read image at " + path);
-		}
-		this.width = this.closestToFour(picture.getWidth());
-		this.height = this.closestToFour(picture.getHeight());
-		System.out.println(this.width + " "+ this.height);
-		this.data = this.toFloatArray(picture);
+	public ImageInput(BufferedImage input) {
+		BufferedImage scaledImage = this.reduceSize(input, 10);
+//		try {
+//			ImageIO.write(scaledImage, "png", new File("test.png"));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		this.width = this.closestToFour(scaledImage.getWidth());
+		this.height = this.closestToFour(scaledImage.getHeight());
+		this.data = this.toFloatArray(scaledImage);
 	}
 	
 	private int closestToFour(int num) {
@@ -38,6 +40,16 @@ public class ImageInput {
 			}
 		}
 		return data;
+	}
+	
+	public BufferedImage reduceSize(BufferedImage image, int amount)
+	{
+		Image rawImage = image.getScaledInstance(image.getWidth()/amount, image.getHeight()/amount, Image.SCALE_FAST);
+		BufferedImage bimage = new BufferedImage(rawImage.getWidth(null), rawImage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bimage.createGraphics();
+		g.drawImage(rawImage, 0,0, null);
+		g.dispose();
+		return bimage;
 	}
 	
 	public float[] getData() {

@@ -49,8 +49,16 @@ def _build_network(x):
 	
 	return output
 
+def buildoptimizer(output):
+	actual = tf.placeholder(shape=[1, 5], dtype=tf.float32, name="actual")
+	loss = tf.reduce_sum(tf.square(actual - output))
+	trainer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+	update = trainer.minimize(loss)
+	return update
+
 if __name__ == '__main__':
 	model = _build_network(x)
+	optimzier = buildoptimizer(model)
 	builder = tf.saved_model.builder.SavedModelBuilder(os.getcwd()+"/cnn")
 	with tf.Session() as s:
 		s.run(tf.global_variables_initializer())

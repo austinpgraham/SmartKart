@@ -8,9 +8,13 @@ public class Action
 {
 	private KeyPress kp;
 	
-	public Action() throws AWTException
+	public Action()
 	{
-		kp = new KeyPress();
+		try {
+			kp = new KeyPress();
+		} catch (AWTException e) {
+			System.out.println("Could not grasp keys");
+		}
 	}
 	
 	public void hardLeft()
@@ -36,5 +40,15 @@ public class Action
 	public void hardRight()
 	{
 		this.kp.longPressKey(KeyEvent.VK_RIGHT);
+	}
+	
+	public void wait(int seconds)
+	{
+		try {
+			this.kp.wait(seconds);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

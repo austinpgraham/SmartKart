@@ -23,11 +23,16 @@ public class SShot
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
 	
-	public static void capture(String file_name) throws IOException, AWTException
+	public static BufferedImage capture()
 	{
-		Robot r = new Robot();
+		Robot r = null;
+		try {
+			r = new Robot();
+		} catch (AWTException e) {
+			System.out.println("ERROR. Could not get state");
+			return null;
+		}
 		BufferedImage screen = r.createScreenCapture(new Rectangle(SShot.getDimensions()));
-		ImageIO.write(screen, "JPEG", new File(file_name));
-		System.out.println("Screen written to " + file_name);
+		return screen;
 	}
 }
