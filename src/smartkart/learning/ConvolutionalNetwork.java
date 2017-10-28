@@ -43,8 +43,8 @@ public class ConvolutionalNetwork {
 		this.build_graph();
 	}
 	
-	public LearningResult feedNetwork(BufferedImage input) {
-		float[] inputData = (new ImageInput(input)).getData();
+	public LearningResult feedNetwork(ImageInput input) {
+		float[] inputData = input.getData();
 		Tensor inputTensor = Tensor.create(inputData);
 		Tensor result = this.session.runner().feed("input", inputTensor).fetch("output").run().get(0);
 		return this.getResultData(result);

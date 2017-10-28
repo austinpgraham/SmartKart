@@ -23,3 +23,5 @@ hs_err_pid*
 /bin/
 lib*
 ten*
+*.txt
+cnn/

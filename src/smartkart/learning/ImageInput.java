@@ -1,6 +1,8 @@
 package smartkart.learning;
 
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,18 +15,17 @@ public class ImageInput {
 	private float[] data;
 	private int width;
 	private int height;
+	private int greyIndex;
 	
 	public ImageInput(BufferedImage input) {
 		BufferedImage scaledImage = this.reduceSize(input, 10);
-//		try {
-//			ImageIO.write(scaledImage, "png", new File("test.png"));
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		BufferedImage cropImage = this.cropImage(scaledImage, 3);
+		BufferedImage[] images = this.splitImageInThree(cropImage);
+		Color[] averageColors = getAverageColorArray(images);
 		this.width = this.closestToFour(scaledImage.getWidth());
 		this.height = this.closestToFour(scaledImage.getHeight());
 		this.data = this.toFloatArray(scaledImage);
+		this.greyIndex = indexClosestToGrey(averageColors);
 	}
 	
 	private int closestToFour(int num) {
@@ -33,10 +34,10 @@ public class ImageInput {
 	}
 	
 	private float[] toFloatArray(BufferedImage image) {
-		float[] data = new float[this.height * this.width];
-		for(int i = 0; i < this.height; i++) {
-			for(int j = 0; j < this.width; j++) {
-				data[this.width * i + j] = image.getRGB(j, i);
+		float[] data = new float[image.getHeight() * image.getWidth()];
+		for(int i = 0; i < image.getHeight(); i++) {
+			for(int j = 0; j < image.getWidth(); j++) {
+				data[image.getWidth() * i + j] = image.getRGB(j, i);
 			}
 		}
 		return data;
@@ -52,6 +53,79 @@ public class ImageInput {
 		return bimage;
 	}
 	
+	public BufferedImage cropImage(BufferedImage image, int amount)
+	{
+		return image.getSubimage(0, image.getHeight()/amount, image.getWidth(), image.getHeight()/amount);
+	}
+	
+	public BufferedImage[] splitImageInThree(BufferedImage image)
+	{
+		BufferedImage images[] = new BufferedImage[3];
+		
+		for(int i=0; i<3; i++)
+		{
+			images[i] = image.getSubimage(i*(image.getWidth()/3), 0, image.getWidth()/3, image.getHeight());
+			Graphics2D g = images[i].createGraphics();
+			g.drawImage(images[i], 0, 0, images[i].getWidth(), images[i].getHeight(), null);
+			g.dispose();
+		}
+		
+		return images;
+	}
+	
+	public Color getAverageColor(float[] imageData)
+	{
+		int redBucket = 0;
+		int greenBucket = 0;
+		int blueBucket = 0;
+		Color pixelColor;
+		
+		for(int i=0; i<imageData.length; i++)
+		{
+			pixelColor = new Color(Math.round(imageData[i]));
+			redBucket += pixelColor.getRed();
+			greenBucket += pixelColor.getGreen();
+			blueBucket += pixelColor.getBlue();
+		}
+		
+		return new Color(redBucket/imageData.length, greenBucket/imageData.length, blueBucket/imageData.length);
+	}
+	
+	public Color[] getAverageColorArray(BufferedImage[] images)
+	{
+		Color[] averageArray = new Color[images.length];
+		
+		for(int i=0; i<images.length; i++)
+		{
+			averageArray[i] = getAverageColor(this.toFloatArray(images[i]));
+		}
+		
+		return averageArray;
+	}
+	
+	public int indexClosestToGrey(Color[] colors)
+	{
+		int minimumDistanceIndex = 0;
+		int distances[] = new int[colors.length];
+		for(int i=0; i<colors.length; i++)
+		{
+			distances[i] = colorDistanceFromGrey(colors[i]);
+			if(i != 0)
+			{
+				if(distances[i] < distances[i-1])
+				{
+					minimumDistanceIndex = i;
+				}
+			}
+		}
+		return minimumDistanceIndex;
+	}
+	
+	public int colorDistanceFromGrey(Color color) 
+	{
+	    return Math.abs(color.getRed() - 128) + Math.abs(color.getGreen() - 128) + Math.abs(color.getBlue() - 128);
+	}
+	
 	public float[] getData() {
 		return this.data;
 	}
@@ -62,5 +136,9 @@ public class ImageInput {
 	
 	public int getHeight() {
 		return this.height;
+	}
+	
+	public int getGrayIndex() {
+		return this.greyIndex;
 	}
 }
