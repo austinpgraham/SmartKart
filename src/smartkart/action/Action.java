@@ -19,27 +19,47 @@ public class Action
 	
 	public void hardLeft()
 	{
-		this.kp.longPressKey(KeyEvent.VK_LEFT);
+		try {
+			this.kp.longPressKey(KeyEvent.VK_LEFT);
+		} catch(InterruptedException ie) {
+			return;
+		}
 	}
 	
 	public void left()
 	{
-		this.kp.pressKey(KeyEvent.VK_LEFT);
+		try {
+			this.kp.pressKey(KeyEvent.VK_LEFT);
+		} catch(InterruptedException ie) {
+			return;
+		}
 	}
 	
 	public void straight()
 	{
-		this.kp.pressKey(KeyEvent.VK_UP);
+		try {
+			this.kp.pressKey(KeyEvent.VK_UP);
+		} catch(InterruptedException ie) {
+			return;
+		}
 	}
 	
 	public void right()
 	{
-		this.kp.pressKey(KeyEvent.VK_RIGHT);
+		try {
+			this.kp.pressKey(KeyEvent.VK_RIGHT);
+		} catch(InterruptedException ie) {
+			return;
+		}
 	}
 	
 	public void hardRight()
 	{
-		this.kp.longPressKey(KeyEvent.VK_RIGHT);
+		try {
+			this.kp.longPressKey(KeyEvent.VK_RIGHT);
+		} catch(InterruptedException ie) {
+			return;
+		}
 	}
 	
 	public void wait(int seconds)
@@ -47,8 +67,15 @@ public class Action
 		try {
 			this.kp.wait(seconds);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return;
+		}
+	}
+	
+	public void exit() {
+		try {
+			this.kp.pressKey(KeyEvent.VK_ESCAPE);
+		} catch (InterruptedException e) {
+			return;
 		}
 	}
 }

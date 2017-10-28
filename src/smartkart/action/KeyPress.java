@@ -17,14 +17,14 @@ public class KeyPress
 		r = new Robot();
 	}
 	
-	public void pressKey(int keyCode)
+	public void pressKey(int keyCode) throws InterruptedException
 	{
 		this.r.keyPress(keyCode);
 		this.wait(0.5f);
 		this.r.keyRelease(keyCode);
 	}
 	
-	public void longPressKey(int keyCode)
+	public void longPressKey(int keyCode) throws InterruptedException
 	{
 		this.r.keyPress(keyCode);
 		this.wait(1f);
@@ -41,7 +41,7 @@ public class KeyPress
 		this.r.keyRelease(keyCode);
 	}
 	
-	public void wait(float seconds)
+	public void wait(float seconds) throws InterruptedException
 	{
 		this.r.delay((int)(seconds * 1000));
 	}

@@ -7,6 +7,7 @@ import java.awt.AWTException;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import smartkart.action.Action;
 import smartkart.action.KeyPress;
 import smartkart.action.SShot;
+import smartkart.action.GasPedal;
 
 
 /*
@@ -24,13 +26,13 @@ import smartkart.action.SShot;
  */
 public class Startup
 {
-	final static String INIT_PIC = "init.jpeg";
-	final static int EPISODES = 1000;
+	final static int EPISODES = 100000;
 	final static double LEARNING_RATE = 0.01;
 	final static double GAMMA = 0.5;
 	final static float EPSILON = 0.2f;
 	final static int ACTIONS = 5;
 	final static int STATES = 3;
+	final static int EXIT = -1;
 	
 	static int totalReward = 0;
 	
@@ -40,27 +42,13 @@ public class Startup
 	
 	static float[][] qTable = new float[3][5];
 	
-	public static Thread hitGas() throws AWTException
+	public static GasPedalComponent hitGas()
 	{
-		final KeyPress kp = new KeyPress();
-		
-		Thread shiftThread = new Thread(new Runnable() {
-		    public void run() {
-		    	while(!Thread.currentThread().isInterrupted()){
-		    		kp.pressKey(KeyEvent.VK_SHIFT);
-		    	}
-		    }
-		});
+		GasPedal pedal = new GasPedal();
+		Thread shiftThread = new Thread(pedal);
 		shiftThread.start();
-		return shiftThread;
+		return new GasPedalComponent(shiftThread, pedal);
 	}
-	
-	public static void releaseGas(Thread gasThread) throws InterruptedException
-	{
-		gasThread.interrupt();
-		gasThread.join();
-	}
-	
 	
 	public static ImageInput getCurrentState() {
 		BufferedImage image = SShot.capture();
@@ -87,6 +75,9 @@ public class Startup
 			break;
 		case 4:
 			actionTaker.hardRight();
+			break;
+		case -1:
+			actionTaker.exit();
 			break;
 		}
 	}
@@ -177,16 +168,19 @@ public class Startup
 				"-c",
 				"python3 src/cnn_python/construct.py " + init.getHeight() + " " + init.getWidth()
 		};
-		
-		try {
-			System.out.println("Building convolutional network...");
-			Runtime.getRuntime().exec(cmd);
-			System.out.println("Network built.");
-		} catch (IOException e1) {
-			System.out.println("Network could no"
-					+ ""
-					+ "t be built. Stack trace: ");
-			e1.printStackTrace();
+		if(!(new File("cnn")).exists())
+		{
+			try {
+				System.out.println("Building convolutional network...");
+				Runtime.getRuntime().exec(cmd);
+				Thread.sleep(5000);
+				System.out.println("Network built.");
+			} catch (IOException e1) {
+				System.out.println("Network could no"
+						+ ""
+						+ "t be built. Stack trace: ");
+				e1.printStackTrace();
+			}
 		}
 		
 		try 
@@ -202,7 +196,7 @@ public class Startup
 		
 		System.out.println("Race starting...");
 		Thread.sleep(10000);
-		Thread gasThread = hitGas();
+		GasPedalComponent gasComponent = hitGas();
 		ConvolutionalNetwork agent = new ConvolutionalNetwork();
 		ImageInput state = getCurrentState();
 		while(state == null) {
@@ -218,6 +212,9 @@ public class Startup
 		} catch (IOException e) {
 			System.out.println("Could not write reward file.");
 		}
-		releaseGas(gasThread);
+		System.out.println("Run complete. Stopping gas...");
+		gasComponent.stopGas();
+		System.out.println("Exiting...");
+		doAction(EXIT);
 	}
 }
