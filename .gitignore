@@ -24,4 +24,4 @@ hs_err_pid*
 lib*
 ten*
 *.txt
-cnn/
+cnn/*
