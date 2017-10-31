@@ -8,9 +8,10 @@ import smartkart.action.KeyPress;
 class RaceStart
 {
 	
-	public static void navigateToRace() throws AWTException
+	public static void navigateToRace() throws AWTException, InterruptedException
 	{
 		KeyPress kp = new KeyPress();
+		
 		// Wait for focus on the emulator
 		kp.wait(5f);
 		
