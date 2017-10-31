@@ -26,7 +26,7 @@ import smartkart.action.GasPedal;
  */
 public class Startup
 {
-	final static int EPISODES = 100000;
+	final static int EPISODES = 10000;
 	final static double LEARNING_RATE = 0.01;
 	final static double GAMMA = 0.5;
 	final static float EPSILON = 0.2f;
@@ -207,7 +207,7 @@ public class Startup
 			state = newState;
 		}
 		try {
-			writeRewardFile("DQN.txt", rewards);
+			writeRewardFile("DQNSimple.txt", rewards);
 			//writeRewardFile("Table.txt", rewards);
 		} catch (IOException e) {
 			System.out.println("Could not write reward file.");
