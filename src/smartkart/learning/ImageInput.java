@@ -7,6 +7,10 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 
@@ -16,16 +20,24 @@ public class ImageInput {
 	private int width;
 	private int height;
 	private int greyIndex;
+	private String state;
 	
 	public ImageInput(BufferedImage input) {
+		HashMap<String, int[]> states = new HashMap<String, int[]>();
+		states.put("onRoad", new int[]{95, 87, 87});
+		states.put("onGrassCheckeredWall", new int[]{91, 94, 40});
+		states.put("onGrassBrickWall", new int[]{97, 90, 42});
+		states.put("onSandWall", new int[]{174, 148, 129});
+		states.put("onRoadWall", new int[]{63, 75, 66});
 		BufferedImage scaledImage = this.reduceSize(input, 10);
-		BufferedImage cropImage = this.cropImage(scaledImage, 3);
+		BufferedImage cropImage = this.cropImage(scaledImage, 3); //for new states by 2
 		BufferedImage[] images = this.splitImageInThree(cropImage);
-		Color[] averageColors = getAverageColorArray(images);
+		Color[] averageColors = this.getAverageColorArray(images);
+		this.state = this.getState(states, averageColors[1]);
 		this.width = this.closestToFour(scaledImage.getWidth());
 		this.height = this.closestToFour(scaledImage.getHeight());
 		this.data = this.toFloatArray(scaledImage);
-		this.greyIndex = indexClosestToGrey(averageColors);
+		this.greyIndex = this.indexClosestToGrey(averageColors);
 	}
 	
 	private int closestToFour(int num) {
@@ -126,6 +138,28 @@ public class ImageInput {
 	    return Math.abs(color.getRed() - 128) + Math.abs(color.getGreen() - 128) + Math.abs(color.getBlue() - 128);
 	}
 	
+	public String getState(HashMap<String, int[]> states, Color color)
+	{
+		String state = "";
+		int[] distances = new int[states.size()];
+		int minDistance = 500;
+		int i = 0;
+		Iterator<Entry<String, int[]>> it = states.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry<String, int[]> pair = (Map.Entry<String, int[]>)it.next();
+	        distances[i] = Math.abs(color.getRed() - pair.getValue()[0]) + Math.abs(color.getGreen() - pair.getValue()[1]) + Math.abs(color.getBlue() - pair.getValue()[2]);
+	        System.out.println("Distance " + distances[i]);
+	        if(distances[i] < minDistance)
+	        {
+	        	minDistance = distances[i];
+	        	state = pair.getKey();
+	        }
+	        it.remove(); // avoids a ConcurrentModificationException
+	        ++i;
+	    }
+		return state;
+	}
+	
 	public float[] getData() {
 		return this.data;
 	}
@@ -140,5 +174,9 @@ public class ImageInput {
 	
 	public int getGrayIndex() {
 		return this.greyIndex;
+	}
+	
+	public String getState() {
+		return this.state;
 	}
 }
