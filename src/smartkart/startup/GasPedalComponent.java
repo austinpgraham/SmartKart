@@ -1,7 +1,11 @@
+/*Author: Austin Graham*/
 package smartkart.startup;
 
 import smartkart.action.GasPedal;
 
+/*
+ * Manage the GasPedal Thread
+ */
 public class GasPedalComponent {
 	
 	private Thread shiftThread;
@@ -12,6 +16,7 @@ public class GasPedalComponent {
 		this.pedal = g;
 	}
 	
+	/*Generic getters*/
 	public Thread getThread() {
 		return this.shiftThread;
 	}
@@ -20,6 +25,7 @@ public class GasPedalComponent {
 		return this.pedal;
 	}
 	
+	/*Signal to stop pressing the gas pedal*/
 	public void stopGas() {
 		this.pedal.stop();
 		try {

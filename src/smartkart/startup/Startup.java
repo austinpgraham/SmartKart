@@ -1,3 +1,7 @@
+/* Authors:
+ * Austin Graham
+ * Lauren Wells
+ */
 package smartkart.startup;
 
 import smartkart.learning.ConvolutionalNetwork;
@@ -26,7 +30,12 @@ import smartkart.action.GasPedal;
  */
 public class Startup
 {
+<<<<<<< HEAD
 	final static int EPISODES = 1000;
+=======
+	/*Declare various configuration parameters*/
+	final static int EPISODES = 10000;
+>>>>>>> master
 	final static double LEARNING_RATE = 0.01;
 	final static double GAMMA = 0.6; 
 	final static long REALLYFUKINBIGTEMP = (long) 10e17;
@@ -38,15 +47,24 @@ public class Startup
 	final static int STATES = 5;
 	final static int EXIT = -1;
 	
+	/*Keep the total reward*/
 	static int totalReward = 0;
 	
+	/*Perform actions*/
 	static Action actionTaker = new Action();
 	
+	/*Keep history of rewards*/
 	static ArrayList<Integer> rewards = new ArrayList<Integer>();
 	static ArrayList<Integer> states = new ArrayList<Integer>();
 	
+<<<<<<< HEAD
 	static float[][] qTable = new float[STATES][ACTIONS];
+=======
+	/*Create Q-Table for relevant approaches*/
+	static float[][] qTable = new float[3][5];
+>>>>>>> master
 	
+	/*Signal to press the gas pedal*/
 	public static GasPedalComponent hitGas()
 	{
 		GasPedal pedal = new GasPedal();
@@ -55,15 +73,18 @@ public class Startup
 		return new GasPedalComponent(shiftThread, pedal);
 	}
 	
+	/*Get state by taking screenshot and extracting data*/
 	public static ImageInput getCurrentState() {
 		BufferedImage image = SShot.capture();
 		return new ImageInput(image);
 	}
 	
+	/*Epsilon-greedy action selection*/
 	public static int chooseAction(int predictedValue) {
 		return (Math.random() < EPSILON) ? (int)(Math.random()*5) : predictedValue;
 	}
 	
+<<<<<<< HEAD
 	public static int softmax(float[] qValues) {
 		float sum = 0;
 		for(float f: qValues) {
@@ -80,6 +101,9 @@ public class Startup
 		
 	}
 	
+=======
+	/*Perform the designated action*/
+>>>>>>> master
 	public static void doAction(int action) {
 		switch(action) {
 		case 0:
@@ -103,6 +127,9 @@ public class Startup
 		}
 	}
 	
+	/* Grab the reward based on state. Uses the simple
+	 * state representation
+	 */
 	public static int getReward(ImageInput state) {
 		int grayIndex = state.getGrayIndex();
 		int reward = 0;
@@ -120,6 +147,7 @@ public class Startup
 		return reward;
 	}
 	
+<<<<<<< HEAD
 	public static int getMarioReward(ImageInput state) {
 		String marioState = state.getState();
 		int reward = 0;
@@ -155,28 +183,50 @@ public class Startup
 		return -1;
 	}
 	
+=======
+	/*Deep-Q-Learning*/
+>>>>>>> master
 	public static ImageInput DQNLearning(ImageInput state, ConvolutionalNetwork agent) {
+		// If no state, get next state and continue
 		if(state == null) {
 			actionTaker.straight();
 			return getCurrentState();
 		}
+		// Feed the current state
 		LearningResult results = agent.feedNetwork(state);
+<<<<<<< HEAD
 		//int nextAction = chooseAction(results.getPredictedValue());
 		int nextAction = softmax(results.getQValues());
+=======
+		// Pick the action
+		int nextAction = chooseAction(results.getPredictedValue());
+		// Do the action
+>>>>>>> master
 		doAction(nextAction);
+		// Get the next state
 		ImageInput newState = getCurrentState();
+<<<<<<< HEAD
 		states.add(stateToInt(newState.getState()));
 		LearningResult secondResult = agent.feedNetwork(newState);
 		int reward = getMarioReward(newState);
+=======
+		// Re-feed to get new state information
+		LearningResult secondResult = agent.feedNetwork(newState);
+		int reward = getReward(newState);
+		// Calculate expected Q versus predicted
+>>>>>>> master
 		float[] target = results.getQValues();
 		float[] second = secondResult.getQValues();
 		target[results.getPredictedValue()] = (float) (reward + GAMMA*second[secondResult.getPredictedValue()]);
+		// Propage network 
 		agent.propogateNetwork(target);
+		// Track reward
 		totalReward += reward;
 		rewards.add(totalReward);
 		return newState;
 	}
 	
+	// Get the max Q-value in the q-table
 	public static int maxQ(float[] qVals) {
 		int maxIdx = 0;
 		float maxVal = -1;
@@ -188,13 +238,15 @@ public class Startup
 		}
 		return maxIdx;
 	}
-	
+	/*Q-Table learning*/
 	public static ImageInput QTableLearning(ImageInput state) {
 		int maxIdx = maxQ(qTable[stateToInt(state.getState())]);
 		//int nextAction = chooseAction(maxIdx);
 		int nextAction = softmax(qTable[stateToInt(state.getState())]);
 		doAction(nextAction);
+		// Get the next state
 		ImageInput nextState = getCurrentState();
+		// This function changes across experiments
 		int reward = getMarioReward(nextState);
 		float maxQNew = qTable[stateToInt(nextState.getState())][maxQ(qTable[stateToInt(state.getState())])];
 		qTable[stateToInt(state.getState())][nextAction] = (float) (qTable[stateToInt(state.getState())][nextAction] + LEARNING_RATE*(reward + GAMMA*maxQNew - qTable[stateToInt(state.getState())][nextAction]));
@@ -203,6 +255,7 @@ public class Startup
 		return nextState;
 	}
 	
+	/*Write the rewards to a file*/
 	public static void writeRewardFile(String filename, ArrayList<Integer> rewards) throws IOException 
 	{
 		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
@@ -225,19 +278,23 @@ public class Startup
 	
 	public static void main(String[] args) throws AWTException, InterruptedException
 	{
+		// Create Q-Table
 		for(int i = 0; i < STATES; i++) {
 			for(int j = 0; j < ACTIONS; j++) {
 				qTable[i][j] = (float)Math.random();
 			}
 		}
 		
+		// Get a fake measurement image
 		BufferedImage initImage = SShot.capture();
 		ImageInput init = new ImageInput(initImage);
+		// create command to signal python to build the network
 		String[] cmd = {
 				"/bin/bash",
 				"-c",
 				"python3 src/cnn_python/construct.py " + init.getHeight() + " " + init.getWidth()
 		};
+		// If it hasn't been build, build it
 		if(!(new File("cnn")).exists())
 		{
 			try {
@@ -253,6 +310,7 @@ public class Startup
 			}
 		}
 		
+		// Navigate the race
 		try 
 		{
 			System.out.println("Starting race...");
@@ -263,11 +321,13 @@ public class Startup
 			System.out.println("Could not navigate to race, exiting...");
 		}
 		
-		
+		// Wait, when race starts, hit gas
 		System.out.println("Race starting...");
 		Thread.sleep(10000);
 		GasPedalComponent gasComponent = hitGas();
+		// Build network
 		ConvolutionalNetwork agent = new ConvolutionalNetwork();
+		// Get first state
 		ImageInput state = getCurrentState();
 		while(state == null) {
 			state = getCurrentState();
@@ -279,12 +339,14 @@ public class Startup
 				EPSILON -= .02;
 			}
 		}
+		// When done, write rewards to a file
 		try {
 			writeRewardFile("QTablesSoftmax.txt", rewards);
 			writeStateFile("QTablesSoftmaxState.txt", states);
 		} catch (IOException e) {
 			System.out.println("Could not write reward file.");
 		}
+		// Stop thread and exit emulator
 		System.out.println("Run complete. Stopping gas...");
 		gasComponent.stopGas();
 		System.out.println("Exiting...");

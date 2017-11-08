@@ -1,3 +1,4 @@
+/*Author: Austin Graham*/
 package smartkart.action;
 
 import java.awt.AWTException;
@@ -18,13 +19,16 @@ import javax.imageio.ImageIO;
  */
 public class SShot 
 {
+	/*Get current dimensions of the screen*/
 	public static Dimension getDimensions()
 	{
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
 	
+	/*Screenshot the computer and return image data*/
 	public static BufferedImage capture()
 	{
+		// Grab robot
 		Robot r = null;
 		try {
 			r = new Robot();
@@ -32,6 +36,7 @@ public class SShot
 			System.out.println("ERROR. Could not get state");
 			return null;
 		}
+		// Capture screen
 		BufferedImage screen = r.createScreenCapture(new Rectangle(SShot.getDimensions()));
 		return screen;
 	}
