@@ -30,7 +30,7 @@ public class ImageInput {
 		states.put("onSandWall", new int[]{174, 148, 129});
 		states.put("onRoadWall", new int[]{63, 75, 66});
 		BufferedImage scaledImage = this.reduceSize(input, 10);
-		BufferedImage cropImage = this.cropImage(scaledImage, 3); //for new states by 2
+		BufferedImage cropImage = this.cropImage(scaledImage, 2); //for new states by 2
 		BufferedImage[] images = this.splitImageInThree(cropImage);
 		Color[] averageColors = this.getAverageColorArray(images);
 		this.state = this.getState(states, averageColors[1]);
@@ -148,7 +148,6 @@ public class ImageInput {
 	    while (it.hasNext()) {
 	        Map.Entry<String, int[]> pair = (Map.Entry<String, int[]>)it.next();
 	        distances[i] = Math.abs(color.getRed() - pair.getValue()[0]) + Math.abs(color.getGreen() - pair.getValue()[1]) + Math.abs(color.getBlue() - pair.getValue()[2]);
-	        System.out.println("Distance " + distances[i]);
 	        if(distances[i] < minDistance)
 	        {
 	        	minDistance = distances[i];
