@@ -1,15 +1,23 @@
+/*Author: Austin Graham*/
 package smartkart.action;
 
 import java.awt.AWTException;
 import java.awt.event.KeyEvent;
 
-
+/*
+ * Perform each of the actions as specified
+ * by pressing the proper key for a number of 
+ * seconds.
+ */
 public class Action 
 {
+	/*Class allowing us to simulate key presses*/
 	private KeyPress kp;
 	
+	/*Constructor*/
 	public Action()
 	{
+		// Get access to the keyboard
 		try {
 			kp = new KeyPress();
 		} catch (AWTException e) {
@@ -17,6 +25,7 @@ public class Action
 		}
 	}
 	
+	/*Hard left turn*/
 	public void hardLeft()
 	{
 		try {
@@ -26,6 +35,7 @@ public class Action
 		}
 	}
 	
+	/*Soft left turn*/
 	public void left()
 	{
 		try {
@@ -35,6 +45,7 @@ public class Action
 		}
 	}
 	
+	/*Continue straight*/
 	public void straight()
 	{
 		try {
@@ -44,6 +55,7 @@ public class Action
 		}
 	}
 	
+	/*Soft right turn*/
 	public void right()
 	{
 		try {
@@ -53,6 +65,7 @@ public class Action
 		}
 	}
 	
+	/*Hard right turn*/
 	public void hardRight()
 	{
 		try {
@@ -62,6 +75,7 @@ public class Action
 		}
 	}
 	
+	/*Do nothing*/
 	public void wait(int seconds)
 	{
 		try {
@@ -71,6 +85,7 @@ public class Action
 		}
 	}
 	
+	/*Exit the emulator*/
 	public void exit() {
 		try {
 			this.kp.pressKey(KeyEvent.VK_ESCAPE);

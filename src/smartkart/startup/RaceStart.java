@@ -1,3 +1,5 @@
+
+/*Author: Austin Graham*/
 package smartkart.startup;
 
 import java.awt.AWTException;
@@ -5,6 +7,10 @@ import java.awt.event.KeyEvent;
 
 import smartkart.action.KeyPress;
 
+/*
+ * From the main menu, press the correct
+ * buttons to get to the race
+ */
 class RaceStart
 {
 	
