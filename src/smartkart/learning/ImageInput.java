@@ -178,7 +178,6 @@ public class ImageInput {
 	    while (it.hasNext()) {
 	        Map.Entry<String, int[]> pair = (Map.Entry<String, int[]>)it.next();
 	        distances[i] = Math.abs(color.getRed() - pair.getValue()[0]) + Math.abs(color.getGreen() - pair.getValue()[1]) + Math.abs(color.getBlue() - pair.getValue()[2]);
-	        System.out.println("Distance " + distances[i]);
 	        if(distances[i] < minDistance)
 	        {
 	        	minDistance = distances[i];

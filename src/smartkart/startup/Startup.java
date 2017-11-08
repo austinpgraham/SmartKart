@@ -33,10 +33,14 @@ public class Startup
 	/*Declare various configuration parameters*/
 	final static int EPISODES = 10000;
 	final static double LEARNING_RATE = 0.01;
-	final static double GAMMA = 0.5;
-	final static float EPSILON = 0.2f;
+	final static double GAMMA = 0.6; 
+	final static long REALLYBIGTEMP = (long) 10e17;
+	final static float TEMP = 0.5f;
+	
+	static float EPSILON = 0.3f;
+	
 	final static int ACTIONS = 5;
-	final static int STATES = 3;
+	final static int STATES = 5;
 	final static int EXIT = -1;
 	
 	/*Keep the total reward*/
@@ -47,9 +51,10 @@ public class Startup
 	
 	/*Keep history of rewards*/
 	static ArrayList<Integer> rewards = new ArrayList<Integer>();
+	static ArrayList<Integer> states = new ArrayList<Integer>();
 	
-	/*Create Q-Table for relevant approaches*/
-	static float[][] qTable = new float[3][5];
+	/*Q-Table for relevant experiments*/
+	static float[][] qTable = new float[STATES][ACTIONS];
 	
 	/*Signal to press the gas pedal*/
 	public static GasPedalComponent hitGas()
@@ -69,6 +74,23 @@ public class Startup
 	/*Epsilon-greedy action selection*/
 	public static int chooseAction(int predictedValue) {
 		return (Math.random() < EPSILON) ? (int)(Math.random()*5) : predictedValue;
+	}
+	
+	/*Softmax action selection*/
+	public static int softmax(float[] qValues) {
+		float sum = 0;
+		for(float f: qValues) {
+			sum += Math.exp(f/REALLYBIGTEMP);
+		}
+		ArrayList<Integer> select = new ArrayList<Integer>();
+		for(int i = 0; i < qValues.length; i++) {
+			int repeat = (int)((Math.exp(qValues[i]/REALLYF=BIGTEMP) / sum)*100);
+			for (int j = 0; j < repeat; j++) {
+				select.add(i);
+			}
+		}
+		return select.get((int)(Math.random()*select.size()));
+		
 	}
 	
 	/*Perform the designated action*/
@@ -115,6 +137,43 @@ public class Startup
 		return reward;
 	}
 	
+	/*Get reward with updated structure*/
+	public static int getMarioReward(ImageInput state) {
+		String marioState = state.getState();
+		int reward = 0;
+		switch(marioState) {
+		case "onRoad":
+			reward += 10;
+			break;
+		case "onGrassCheckeredWall":
+		case "onGrassBrickWall":
+		case "onSandWall":
+			reward -= 5;
+			break;
+		case "onRoadWall":
+			reward += 2;
+			break;
+		}
+		return reward;
+	}
+		
+	/*Convert the state string to int*/
+	public static int stateToInt(String state) {
+		switch(state) {
+		case "onRoad":
+			return 0;
+		case "onGrassCheckeredWall":
+			return 1;
+		case "onGrassBrickWall":
+			return 2;
+		case "onSandWall":
+			return 3;
+		case "onRoadWall":
+			return 4;
+		}
+		return -1;
+	}
+	
 	/*Deep-Q-Learning*/
 	public static ImageInput DQNLearning(ImageInput state, ConvolutionalNetwork agent) {
 		// If no state, get next state and continue
@@ -130,10 +189,9 @@ public class Startup
 		doAction(nextAction);
 		// Get the next state
 		ImageInput newState = getCurrentState();
-		// Re-feed to get new state information
+		states.add(stateToInt(newState.getState()));
 		LearningResult secondResult = agent.feedNetwork(newState);
-		int reward = getReward(newState);
-		// Calculate expected Q versus predicted
+		int reward = getMarioReward(newState);
 		float[] target = results.getQValues();
 		float[] second = secondResult.getQValues();
 		target[results.getPredictedValue()] = (float) (reward + GAMMA*second[secondResult.getPredictedValue()]);
@@ -159,20 +217,16 @@ public class Startup
 	}
 	/*Q-Table learning*/
 	public static ImageInput QTableLearning(ImageInput state) {
-		// Get predicted values
-		int maxIdx = maxQ(qTable[state.getGrayIndex()]);
-		// Select action
-		int nextAction = chooseAction(maxIdx);
-		// Do the action
+		int maxIdx = maxQ(qTable[stateToInt(state.getState())]);
+		//int nextAction = chooseAction(maxIdx);
+		int nextAction = softmax(qTable[stateToInt(state.getState())]);
 		doAction(nextAction);
 		// Get the next state
 		ImageInput nextState = getCurrentState();
-		// Get the reward
-		int reward = getReward(nextState);
-		// Get best Q and perform learning
-		float maxQNew = qTable[nextState.getGrayIndex()][maxQ(qTable[state.getGrayIndex()])];
-		qTable[state.getGrayIndex()][nextAction] = (float) (qTable[state.getGrayIndex()][nextAction] + LEARNING_RATE*(reward + GAMMA*maxQNew - qTable[state.getGrayIndex()][nextAction]));
-		// Track the reward
+		// This function changes across experiments
+		int reward = getMarioReward(nextState);
+		float maxQNew = qTable[stateToInt(nextState.getState())][maxQ(qTable[stateToInt(state.getState())])];
+		qTable[stateToInt(state.getState())][nextAction] = (float) (qTable[stateToInt(state.getState())][nextAction] + LEARNING_RATE*(reward + GAMMA*maxQNew - qTable[stateToInt(state.getState())][nextAction]));
 		totalReward += reward;
 		rewards.add(totalReward);
 		return nextState;
@@ -184,6 +238,17 @@ public class Startup
 		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 		for(int i = 0; i < rewards.size(); i++) {
 			bw.write((i+1)+":"+rewards.get(i) + "\n");
+		}
+		bw.close();
+	}
+	
+	public static void writeStateFile(String filename, ArrayList<Integer> states) throws IOException 
+	{
+		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+		for(int i = 0; i < states.size(); i++)
+		{
+			int state = (states.get(i) == 0) ? 1 : 0;
+			bw.write((i+1)+":"+state + "\n");
 		}
 		bw.close();
 	}
@@ -244,15 +309,17 @@ public class Startup
 		while(state == null) {
 			state = getCurrentState();
 		}
-		// Learn for a number of episodes
-		for(int i = 0; i < EPISODES; i++) {
+		for(int i = 1; i <= EPISODES; i++) {
 			ImageInput newState = DQNLearning(state, agent);
 			state = newState;
+			if(i % 1000 == 0) {
+				EPSILON -= .02;
+			}
 		}
 		// When done, write rewards to a file
 		try {
-			writeRewardFile("DQNSimple.txt", rewards);
-			//writeRewardFile("Table.txt", rewards);
+			writeRewardFile("QTablesSoftmax.txt", rewards);
+			writeStateFile("QTablesSoftmaxState.txt", states);
 		} catch (IOException e) {
 			System.out.println("Could not write reward file.");
 		}
